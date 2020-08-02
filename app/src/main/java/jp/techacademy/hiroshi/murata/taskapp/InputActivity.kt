@@ -21,11 +21,11 @@ class InputActivity : AppCompatActivity() {
 
     private val mOnDateClickListener = View.OnClickListener {
         val datePickerDialog = DatePickerDialog(this,
-            DatePickerDialog.OnDateSetListener{ _, year, month, dayOfMonth ->
+            DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
                 mYear = year
                 mMonth = month
                 mDay = dayOfMonth
-                val dateString = mYear.toString() + "/" + String.format("%02d", mMonth + 1 ) + "/" + String.format("%02d", mDay)
+                val dateString = mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
                 date_button.text = dateString
             }, mYear, mMonth, mDay)
         datePickerDialog.show()
@@ -33,11 +33,11 @@ class InputActivity : AppCompatActivity() {
 
     private val mOnTimeClickListener = View.OnClickListener {
         val timePickerDialog = TimePickerDialog(this,
-                TimePickerDialog.OnTimeSetListener{_, hour, minute ->
-                    mHour = hour
-                    mMinute = minute
-                    val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
-                    times_button.text = timeString
+            TimePickerDialog.OnTimeSetListener { _, hour, minute ->
+                mHour = hour
+                mMinute = minute
+                val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
+                times_button.text = timeString
             }, mHour, mMinute, false)
         timePickerDialog.show()
     }
@@ -51,25 +51,27 @@ class InputActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_input)
 
-        //ActionBar settings
+        // ActionBarを設定する
         val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
-        if( supportActionBar != null )
+        if (supportActionBar != null) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         }
 
-        // UI parts settings
+        // UI部品の設定
         date_button.setOnClickListener(mOnDateClickListener)
         times_button.setOnClickListener(mOnTimeClickListener)
         done_button.setOnClickListener(mOnDoneClickListener)
 
+        // EXTRA_TASK から Task の id を取得して、 id から Task のインスタンスを取得する
         val intent = intent
         val taskId = intent.getIntExtra(EXTRA_TASK, -1)
         val realm = Realm.getDefaultInstance()
-        mTask = realm.where(Task::class.java).equalTo("id",taskId).findFirst()
+        mTask = realm.where(Task::class.java).equalTo("id", taskId).findFirst()
         realm.close()
 
-        if (mTask == null ){
+        if (mTask == null) {
+            // 新規作成の場合
             val calendar = Calendar.getInstance()
             mYear = calendar.get(Calendar.YEAR)
             mMonth = calendar.get(Calendar.MONTH)
@@ -77,17 +79,19 @@ class InputActivity : AppCompatActivity() {
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
         } else {
-            titel_edit_text.setText(mTask!!.title)
+            // 更新の場合
+            title_edit_text.setText(mTask!!.title)
             content_edit_text.setText(mTask!!.contents)
 
-            val calendar  = Calendar.getInstance()
-            calendar.time = get(Calendar.YEAR)
+            val calendar = Calendar.getInstance()
+            calendar.time = mTask!!.date
+            mYear = calendar.get(Calendar.YEAR)
             mMonth = calendar.get(Calendar.MONTH)
             mDay = calendar.get(Calendar.DAY_OF_MONTH)
             mHour = calendar.get(Calendar.HOUR_OF_DAY)
             mMinute = calendar.get(Calendar.MINUTE)
 
-            val dateString = mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d",mDay)
+            val dateString = mYear.toString() + "/" + String.format("%02d", mMonth + 1) + "/" + String.format("%02d", mDay)
             val timeString = String.format("%02d", mHour) + ":" + String.format("%02d", mMinute)
 
             date_button.text = dateString
@@ -100,25 +104,27 @@ class InputActivity : AppCompatActivity() {
 
         realm.beginTransaction()
 
-            if (mTask == null) {
-                mTask = Task()
+        if (mTask == null) {
+            // 新規作成の場合
+            mTask = Task()
 
-                val taskRealmResults = realm.where(Task::class.java).findAll()
+            val taskRealmResults = realm.where(Task::class.java).findAll()
 
-                val identifier =
-                    if (taskRealmResults.max("id") != null) {
-                        taskRealmResults.max("id")!!.toInt() + 1
-                    } else {
-                        0
-                    }
-                mTask!!.id = identifier
+            val identifier: Int =
+                if (taskRealmResults.max("id") != null) {
+                    taskRealmResults.max("id")!!.toInt() + 1
+                } else {
+                    0
+                }
+            mTask!!.id = identifier
         }
+
         val title = title_edit_text.text.toString()
         val content = content_edit_text.text.toString()
 
         mTask!!.title = title
         mTask!!.contents = content
-        val calendar = GregorianCalendar(mTear, mMonth, mDay, mMinute)
+        val calendar = GregorianCalendar(mYear, mMonth, mDay, mHour, mMinute)
         val date = calendar.time
         mTask!!.date = date
 
