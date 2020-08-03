@@ -15,7 +15,7 @@ import io.realm.Realm
 
 
 
-class TaskAlermReceiver : BroadcastReceiver(){
+class TaskAlarmReceiver : BroadcastReceiver(){
     override fun onReceive(context: Context?, intent: Intent?) {
         val notificationManager = context!!.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -54,5 +54,7 @@ class TaskAlermReceiver : BroadcastReceiver(){
         // 通知を表示する
         notificationManager.notify(task!!.id, builder.build())
         realm.close()
+
+
     }
 }

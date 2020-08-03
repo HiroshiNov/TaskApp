@@ -9,7 +9,7 @@ open class Task : RealmObject(), Serializable{
     var title: String = "" //title
     var contents: String = "" //contents
     var date: Date = Date() //date
-
+    var category: String ="" //category
 
     // set id as primary key
 
